@@ -16,7 +16,8 @@ import java.util.List;
  */
 @Data
 @Builder
-public class ChatMessageVO implements Serializable {
+public class ChatMessageResponse implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -30,5 +31,4 @@ public class ChatMessageVO implements Serializable {
      * 会话最近活动时间（用于前端历史分组、排序），一般对应库表 update_time。
      */
     private Date updateTime;
-
 }

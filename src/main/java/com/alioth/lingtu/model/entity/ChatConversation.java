@@ -14,10 +14,11 @@ import lombok.Data;
  *
  * @TableName chat_conversation
  */
-@TableName(value = "chat_conversation")
 @Data
 @Builder
+@TableName(value = "chat_conversation")
 public class ChatConversation implements Serializable {
+
     /**
      * 主键
      */

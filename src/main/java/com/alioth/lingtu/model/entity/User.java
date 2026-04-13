@@ -12,9 +12,10 @@ import java.util.Date;
  *
  * @TableName user
  */
-@TableName(value = "user")
 @Data
+@TableName(value = "user")
 public class User implements Serializable {
+
     /**
      * 主键
      */
@@ -70,5 +71,4 @@ public class User implements Serializable {
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
 }

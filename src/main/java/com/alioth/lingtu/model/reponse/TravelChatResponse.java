@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "旅游助手对话响应")
 public class TravelChatResponse {
 
-    @Schema(description = "会话Id")
+    @Schema(description = "会话 id")
     private String chatId;
 
     @Schema(description = "模型回答")
@@ -32,6 +32,4 @@ public class TravelChatResponse {
         this.answer = answer;
         return this;
     }
-
-
 }

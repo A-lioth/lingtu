@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(BusinessException.class)
     public BaseResult<?> businessExceptionHandler(BusinessException e) {
         log.error("BusinessException", e);

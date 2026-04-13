@@ -16,9 +16,9 @@ import java.util.Date;
  *
  * @TableName chat_message
  */
-@TableName(value = "chat_message")
 @Data
 @Builder
+@TableName(value = "chat_message")
 public class ChatMessage implements Serializable {
     /**
      * 主键

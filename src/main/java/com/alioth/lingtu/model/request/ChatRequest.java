@@ -14,6 +14,7 @@ import java.io.Serializable;
 @Data
 @Schema(description = "贵州旅游助手对话请求")
 public class ChatRequest implements Serializable {
+
     @Schema(description = "用户问题或需求描述", example = "帮我规划五天行程，想去黄果树和西江")
     @NotBlank
     private String message;

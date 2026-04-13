@@ -6,6 +6,7 @@ package com.alioth.lingtu.exception;
  * @author alioth
  */
 public class ThrowUtils {
+
     /**
      * 条件成立则抛异常
      *
@@ -27,5 +28,4 @@ public class ThrowUtils {
     public static void throwIf(boolean condition, ResponseStatus status) {
         throwIf(condition, new BusinessException(status));
     }
-
 }
