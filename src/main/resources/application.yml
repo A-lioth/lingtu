@@ -1,3 +1,42 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
 spring:
   application:
     name: lingtu
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/lingtu?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 39784560
+    driver-class-name: com.mysql.cj.jdbc.Driver
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.alioth.lingtu.model.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+  openapi:
+    title: "Prodigal AI Travel 接口文档"
+    version: v1.0
+    description: "Prodigal AI 旅游助手接口文档"
+    concat: Lang
+    group:
+      default:
+        group-name: "local"
+        api-rule: package
+        api-rule-resources:
+          - com.prodigal.travel.controller
