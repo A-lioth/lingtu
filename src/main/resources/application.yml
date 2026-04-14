@@ -12,6 +12,11 @@ spring:
     username: root
     password: 39784560
     driver-class-name: com.mysql.cj.jdbc.Driver
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen3.5:9b
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
