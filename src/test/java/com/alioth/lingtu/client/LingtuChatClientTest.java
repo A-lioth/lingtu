@@ -18,9 +18,9 @@ class LingtuChatClientTest {
     @Test
     void chat() {
         String id = UUID.randomUUID().toString();
-        String chat = lingtuChatClient.chat("你好，我叫 alioth，请你记住我的名字", id);
-        log.info("chat: {}", chat);
-        String chat1 = lingtuChatClient.chat("我叫什么名字来着？", id);
+        String chat1 = lingtuChatClient.chat("你好，我叫 alioth", id);
         log.info("chat1: {}", chat1);
+        String chat3 = lingtuChatClient.chat("你可以干什么呢？", id);
+        log.info("chat3: {}", chat3);
     }
 }

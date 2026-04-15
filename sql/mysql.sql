@@ -33,6 +33,15 @@ CREATE TABLE IF NOT EXISTS chat_conversation (
                                                  KEY idx_chat_conversation_user (user_id, update_time)
 ) COMMENT '会话表';
 
+CREATE TABLE `spring_ai_chat_memory` (
+                                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                                         `conversation_id` varchar(255) DEFAULT NULL COMMENT '会话ID',
+                                         `content` varchar(10000) DEFAULT NULL COMMENT '内容',
+                                         `type` varchar(255) DEFAULT NULL COMMENT '类型',
+                                         `timestamp` datetime DEFAULT NULL COMMENT '时间',
+                                         PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
 -- 单条消息持久化（Spring AI ChatMemory / 前端消息列表）
 CREATE TABLE IF NOT EXISTS chat_message (
                                             id               VARCHAR(64) PRIMARY KEY  COMMENT '主键',

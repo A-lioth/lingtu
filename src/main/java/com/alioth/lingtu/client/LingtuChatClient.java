@@ -1,10 +1,12 @@
 package com.alioth.lingtu.client;
 
+import com.alioth.lingtu.constant.LingtuConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
@@ -20,20 +22,36 @@ public class LingtuChatClient {
     /**
      * 基于内存的对话记忆
      */
-    public LingtuChatClient(ChatModel ollamaChatModel) {
+    // public LingtuChatClient(ChatModel ollamaChatModel) {
+    //     MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
+    //             .chatMemoryRepository(new InMemoryChatMemoryRepository())
+    //             .maxMessages(20)
+    //             .build();
+    //     chatClient = ChatClient.builder(ollamaChatModel)
+    //             // .defaultSystem(SYSTEM_PROMPT)
+    //             .defaultSystem(LingtuConstant.TEST_PROMPT)
+    //             .defaultAdvisors(
+    //                     MessageChatMemoryAdvisor.builder(chatMemory).build(),
+    //                     // 自定义日志 Advisor，可按需开启
+    //                     new SimpleLoggerAdvisor()
+    //                     // 自定义推理增强 Advisor，可按需开启
+    //                     //,new ReReadingAdvisor()
+    //             )
+    //             .build();
+    // }
+
+    /**
+     * 基于 MySQL 的会话记忆
+     * @param ollamaChatModel
+     */
+    public LingtuChatClient(ChatModel ollamaChatModel, ChatMemoryRepository jdbcChatMemoryRepository) {
         MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(new InMemoryChatMemoryRepository())
+                .chatMemoryRepository(jdbcChatMemoryRepository)
                 .maxMessages(20)
                 .build();
         chatClient = ChatClient.builder(ollamaChatModel)
-                // .defaultSystem(SYSTEM_PROMPT)
-                .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                        // 自定义日志 Advisor，可按需开启
-                        new SimpleLoggerAdvisor()
-                        // 自定义推理增强 Advisor，可按需开启
-                        //,new ReReadingAdvisor()
-                )
+                .defaultSystem(LingtuConstant.TEST_PROMPT)
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 

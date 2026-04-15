@@ -16,7 +16,11 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: qwen3.5:9b
+        model: qwen3.5:4b
+    memory:
+      repository:
+        jdbc:
+          initialize-schema: never
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
