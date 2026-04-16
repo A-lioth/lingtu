@@ -23,4 +23,11 @@ class LingtuChatClientTest {
         String chat3 = lingtuChatClient.chat("你可以干什么呢？", id);
         log.info("chat3: {}", chat3);
     }
+
+    @Test
+    void chatWithRag() {
+        String id = UUID.randomUUID().toString();
+        String chat = lingtuChatClient.chatWithRag("我想去贵州旅行，有什么推荐的吗？", id);
+        log.info("chatWithRag: {}", chat);
+    }
 }
