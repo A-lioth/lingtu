@@ -1,0 +1,54 @@
+package com.alioth.lingtu.tools;
+
+import com.alioth.lingtu.config.MailConfig;
+import jakarta.annotation.Resource;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+
+/**
+ * 工具注册配置
+ *
+ * @author alioth
+ */
+@Configuration
+public class ToolRegisterConfig {
+
+    // @Value("${prodigal.search-api.api-key}")
+    private String searchApiKey;
+    // @Value("${prodigal.amap.api-key}")
+    private String amapApiKey;
+    // @Value("${prodigal.pexels.api-key}")
+    private String imageSearchApiKey;
+    @Resource
+    private MailConfig mailConfig;
+
+    @Resource
+    ClientIpResolver clientIpResolver;
+
+    @Bean
+    public ToolCallback[] allTools(JavaMailSender javaMailSender) {
+        FileOperationTool fileOperationTool = new FileOperationTool();
+        WebSearchTool webSearchTool = new WebSearchTool(searchApiKey);
+        EmailTool emailTool = new EmailTool(javaMailSender, mailConfig.getUsername(), mailConfig.getHost());
+        WeatherTool weatherTool = new WeatherTool(amapApiKey);
+        DateTimeTool dateTimeTool = new DateTimeTool();
+        IPTool ipTool = new IPTool(clientIpResolver);
+        ImageSearchTool imageSearchTool = new ImageSearchTool(imageSearchApiKey);
+        PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
+        TerminateTool terminateTool = new TerminateTool();
+        return ToolCallbacks.from(
+                fileOperationTool,
+                webSearchTool,
+                emailTool,
+                weatherTool,
+                dateTimeTool,
+                ipTool,
+                pdfGenerationTool,
+                terminateTool,
+                imageSearchTool
+        );
+    }
+}

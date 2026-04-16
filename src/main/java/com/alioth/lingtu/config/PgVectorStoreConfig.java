@@ -28,7 +28,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
  * @author alioth
  */
 @Slf4j
-@Configuration
+// @Configuration
 public class PgVectorStoreConfig {
     @Resource
     private KnowledgeLoader knowledgeLoader;

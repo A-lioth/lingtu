@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @Slf4j
 @SpringBootTest(classes = LingtuApplication.class)
 class LingtuChatClientTest {
@@ -24,10 +26,18 @@ class LingtuChatClientTest {
         log.info("chat3: {}", chat3);
     }
 
+    // @Test
+    // void chatWithRag() {
+    //     String id = UUID.randomUUID().toString();
+    //     String chat = lingtuChatClient.chatWithRag("我想去贵州旅行，有什么推荐的吗？", id);
+    //     log.info("chatWithRag: {}", chat);
+    // }
+
     @Test
-    void chatWithRag() {
-        String id = UUID.randomUUID().toString();
-        String chat = lingtuChatClient.chatWithRag("我想去贵州旅行，有什么推荐的吗？", id);
-        log.info("chatWithRag: {}", chat);
+    void chatWithTools() {
+        //第一轮
+        String chatId = cn.hutool.core.lang.UUID.fastUUID().toString();
+        String content = lingtuChatClient.chatWithTools("规划一份在银川的旅行计划，将pdf发送给 3434039767@qq.com", chatId);
+        assertNotNull(content);
     }
 }
