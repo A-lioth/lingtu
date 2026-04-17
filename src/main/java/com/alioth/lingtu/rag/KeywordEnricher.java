@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.model.transformer.KeywordMetadataEnricher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,7 +20,11 @@ import java.util.List;
 public class KeywordEnricher {
 
     @Resource
+    @Qualifier("ollamaChatModel")
     private ChatModel ollamaChatModel;
+    @Resource
+    @Qualifier("dashscopeChatModel")
+    private ChatModel dashscopeChatModel;
 
     /**
      * 为文档添加关键词
@@ -28,7 +33,7 @@ public class KeywordEnricher {
      * @return
      */
     public List<Document> enrichDocument(List<Document> documents) {
-        KeywordMetadataEnricher keywordMetadataEnricher = new KeywordMetadataEnricher(ollamaChatModel, 5);
+        KeywordMetadataEnricher keywordMetadataEnricher = new KeywordMetadataEnricher(dashscopeChatModel, 5);
         return keywordMetadataEnricher.apply(documents);
     }
 }

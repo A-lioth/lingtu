@@ -26,12 +26,14 @@ class LingtuChatClientTest {
         log.info("chat3: {}", chat3);
     }
 
-    // @Test
-    // void chatWithRag() {
-    //     String id = UUID.randomUUID().toString();
-    //     String chat = lingtuChatClient.chatWithRag("我想去贵州旅行，有什么推荐的吗？", id);
-    //     log.info("chatWithRag: {}", chat);
-    // }
+    @Test
+    void chatWithRag() {
+        String id = UUID.randomUUID().toString();
+        // String chat = lingtuChatClient.chatWithRag("我想去贵州旅行，有什么推荐的吗？", id);
+        // log.info("chatWithRag: {}", chat);
+        String chat2 = lingtuChatClient.chatWithRag("我想去爬山，明天和朋友一起从银川出发，有什么推荐的吗？将详细计划以PDF的形式发给我的邮箱baker_20231793@qq.com", id);
+        log.info("chatWithRag: {}", chat2);
+    }
 
     @Test
     void chatWithTools() {

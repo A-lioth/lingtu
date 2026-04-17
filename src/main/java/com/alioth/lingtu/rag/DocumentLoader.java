@@ -25,14 +25,14 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Component
-public class KnowledgeLoader {
+public class DocumentLoader {
 
     private final ResourcePatternResolver resourcePatternResolver;
     private static final Pattern SEMANTIC_SPLIT_PATTERN = Pattern.compile(
             "(?m)(?=^#{1,3}\\s)|\\n\\s*\\n|(?m)(?=^---+$)"
     );
 
-    KnowledgeLoader(ResourcePatternResolver resourcePatternResolver) {
+    DocumentLoader(ResourcePatternResolver resourcePatternResolver) {
         this.resourcePatternResolver = resourcePatternResolver;
     }
 

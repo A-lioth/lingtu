@@ -5,6 +5,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.rag.Query;
 import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
 import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,8 +18,8 @@ public class QueryRewriter {
 
     private final QueryTransformer queryTransformer;
 
-    public QueryRewriter(ChatModel ollamaChatModel) {
-        ChatClient.Builder chatClientBuilder = ChatClient.builder(ollamaChatModel);
+    public QueryRewriter(@Qualifier("dashscopeChatModel") ChatModel dashscopeChatModel) {
+        ChatClient.Builder chatClientBuilder = ChatClient.builder(dashscopeChatModel);
         // 创建查询重写转换器
         queryTransformer = RewriteQueryTransformer.builder()
                 .chatClientBuilder(chatClientBuilder)

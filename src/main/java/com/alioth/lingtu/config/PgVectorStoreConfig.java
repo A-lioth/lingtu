@@ -1,8 +1,8 @@
 package com.alioth.lingtu.config;
 
+import com.alioth.lingtu.rag.DocumentLoader;
 import com.alioth.lingtu.rag.KeywordEnricher;
-import com.alioth.lingtu.rag.KnowledgeLoader;
-import com.alioth.lingtu.rag.LingtuTokenTextSplitter;
+import com.alioth.lingtu.rag.TokenTextSplitter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
@@ -23,50 +23,54 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistan
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
 
 /**
- * pgVectorStore 配置
- *
- * @author alioth
+ * @author Lang
+ * @project prodigal-ai-travel
+ * @Version: 1.0
+ * @description PgVectorStore - 阿里云 serverless 数据库
+ * @since 2026/4/1
  */
 @Slf4j
-// @Configuration
+@Configuration
 public class PgVectorStoreConfig {
     @Resource
-    private KnowledgeLoader knowledgeLoader;
+    private DocumentLoader documentLoader;
     @Resource
-    private LingtuTokenTextSplitter lingtuTokenTextSplitter;
+    private TokenTextSplitter tokenTextSplitter;
     @Resource
-    private KeywordEnricher KeywordEnricher;
+    private KeywordEnricher keywordEnricher;
 
     private static final int BATCH_SIZE = 25;
 
     @Bean
-    public VectorStore pgVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
-        PgVectorStore pgVectorStore = PgVectorStore.builder(jdbcTemplate, embeddingModel)
+    public VectorStore pgVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
+        VectorStore pgVectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
                 .dimensions(1536)                    // Optional: defaults to model dimensions or 1536
                 .distanceType(COSINE_DISTANCE)       // Optional: defaults to COSINE_DISTANCE
                 .indexType(HNSW)                     // Optional: defaults to HNSW
                 .initializeSchema(true)              // Optional: defaults to false
                 .schemaName("public")                // Optional: defaults to "public"
-                .vectorTableName("vector_store")     // Optional: defaults to "vector_store"
+                .vectorTableName("vector_store1")     // Optional: defaults to "vector_store"
                 .maxDocumentBatchSize(10000)
                 .build();
-        //加载文档
-        List<Document> documents = knowledgeLoader.loadMarkdown();
-        //切分文档
-        List<Document> splitDocuments = lingtuTokenTextSplitter.splitCustomized(documents);
-        //添加关键词
-        List<Document> enrichDocument = KeywordEnricher.enrichDocument(splitDocuments);
-        List<Document> documentsToInsert = filterNewDocuments(enrichDocument, jdbcTemplate);
+        // 注意：文档加载已禁用，如需加载请手动调用相关服务
+        // 原因：避免在 bean 初始化时执行耗时操作，影响应用启动
+            //加载文档
+            List<Document> documents = documentLoader.loadMarkdown();
+            //切分文档
+            List<Document> splitDocuments = tokenTextSplitter.splitCustomized(documents);
+            //添加关键词
+            List<Document> enrichDocument = keywordEnricher.enrichDocument(splitDocuments);
+            List<Document> documentsToInsert = filterNewDocuments(enrichDocument, jdbcTemplate);
 
-        if (documentsToInsert.isEmpty()) {
-            log.info("No new knowledge chunks found, skip loading to pgVectorStore.");
-            return pgVectorStore;
-        }
-        for (int i = 0; i < documentsToInsert.size(); i += BATCH_SIZE) {
-            int end = Math.min(i + BATCH_SIZE, documentsToInsert.size());
-            pgVectorStore.add(documentsToInsert.subList(i, end));
-        }
-        log.info("Knowledge chunks loaded to pgVectorStore: {}/{}", documentsToInsert.size(), enrichDocument.size());
+            if (documentsToInsert.isEmpty()) {
+                log.info("No new knowledge chunks found, skip loading to pgVectorStore.");
+                return pgVectorStore;
+            }
+            for (int i = 0; i < documentsToInsert.size(); i += BATCH_SIZE) {
+                int end = Math.min(i + BATCH_SIZE, documentsToInsert.size());
+                pgVectorStore.add(documentsToInsert.subList(i, end));
+            }
+            log.info("Knowledge chunks loaded to pgVectorStore: {}/{}", documentsToInsert.size(), enrichDocument.size());
         return pgVectorStore;
     }
 

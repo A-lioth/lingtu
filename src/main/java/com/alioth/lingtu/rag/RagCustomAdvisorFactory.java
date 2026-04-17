@@ -25,14 +25,14 @@ public class RagCustomAdvisorFactory {
      * 创建检索增强顾问
      * 包含 查询扩展、文档检索、文档合并、上下文感知查询增强
      * @param vectorStore 向量数据库
-     * @param ollamaChatModel 聊天模型
+     * @param dashscopeChatModel 聊天模型
      * @return
      */
-    public static Advisor createRetrievalAugmentationAdvisor(VectorStore vectorStore, ChatModel ollamaChatModel) {
+    public static Advisor createRetrievalAugmentationAdvisor(VectorStore vectorStore, ChatModel dashscopeChatModel) {
         //创建查询扩展器
         QueryExpander queryExpander = MultiQueryExpander.builder()
-                .chatClientBuilder(ChatClient.builder(ollamaChatModel))
-                .includeOriginal( true)//包含原始查询
+                .chatClientBuilder(ChatClient.builder(dashscopeChatModel))
+                .includeOriginal(true)//包含原始查询
                 .numberOfQueries(3) //生成3个查询变体
                 .build();
         //创建文档检索器
