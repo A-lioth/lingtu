@@ -1,14 +1,15 @@
 package com.alioth.lingtu.client;
 
 import com.alioth.lingtu.advisor.LoggerAdvisor;
+import com.alioth.lingtu.chatmemory.MySQLChatMemory;
 import com.alioth.lingtu.constant.LingtuConstant;
 import com.alioth.lingtu.rag.QueryRewriter;
 import com.alioth.lingtu.rag.RagCustomAdvisorFactory;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
@@ -16,69 +17,69 @@ import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @Component
 public class LingtuChatClient {
 
-    private final ChatClient ollamaChatClient;
-    private final ChatClient dashscopeChatClient;
+    @Qualifier("ollamaChatModel")
+    @Resource
+    private ChatModel ollamaChatModel;
+
+    @Qualifier("dashscopeChatModel")
+    @Resource
+    private ChatModel dashscopeChatModel;
+
+    @Resource
+    private ChatMemoryRepository jdbcChatMemoryRepository;
+
+    private ChatClient ollamaChatClient;
+    private ChatClient dashscopeChatClient;
 
     /**
-     * 构造函数 - 注入两个模型
+     * 初始化 Ollama ChatClient - 基于内存的对话记忆
      */
-    public LingtuChatClient(
-            @Qualifier("ollamaChatModel") ChatModel ollamaChatModel,
-            @Qualifier("dashscopeChatModel") ChatModel dashscopeChatModel) {
-
-        this.dashscopeChatModel = dashscopeChatModel;
-
-        // Ollama ChatClient - 用于普通对话和 RAG
-        MessageWindowChatMemory ollamaChatMemory = MessageWindowChatMemory.builder()
+    @PostConstruct
+    public void initOllamaChatClient() {
+        MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(new InMemoryChatMemoryRepository())
                 .maxMessages(20)
                 .build();
-        this.ollamaChatClient = ChatClient.builder(ollamaChatModel)
-                .defaultSystem(LingtuConstant.TEST_PROMPT)
-                .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(ollamaChatMemory).build(),
-                        new SimpleLoggerAdvisor()
-                )
-                .build();
-
-        // DashScope ChatClient - 用于工具调用等复杂场景
-        MessageWindowChatMemory dashscopeChatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(new InMemoryChatMemoryRepository())
-                .maxMessages(20)
-                .build();
-        this.dashscopeChatClient = ChatClient.builder(dashscopeChatModel)
+        ollamaChatClient = ChatClient.builder(ollamaChatModel)
                 .defaultSystem(LingtuConstant.SYSTEM_PROMPT)
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(dashscopeChatMemory).build(),
+                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        // 自定义日志 Advisor,可按需开启
                         new LoggerAdvisor()
+                        // 自定义推理增强 Advisor,可按需开启
+                        // ,new ReReadingAdvisor()
                 )
                 .build();
     }
 
+    @Resource
+    private MySQLChatMemory chatMemory;
+
     /**
-     * 基于 MySQL 的会话记忆
+     * 初始化 DashScope ChatClient - 基于 MySQL 的会话记忆
      */
-    // public LingtuChatClient(ChatModel ollamaChatModel, ChatMemoryRepository jdbcChatMemoryRepository) {
-    //     MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
-    //             .chatMemoryRepository(jdbcChatMemoryRepository)
-    //             .maxMessages(20)
-    //             .build();
-    //     chatClient = ChatClient.builder(ollamaChatModel)
-    //             .defaultSystem(LingtuConstant.TEST_PROMPT)
-    //             .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new LoggerAdvisor())
-    //             .build();
-    // }
+    @PostConstruct
+    public void initDashscopeChatClient() {
+        // MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
+        //         .chatMemoryRepository(jdbcChatMemoryRepository)
+        //         .maxMessages(20)
+        //         .build();
+        dashscopeChatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem(LingtuConstant.SYSTEM_PROMPT)
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new LoggerAdvisor())
+                .build();
+    }
 
     /**
      * 聊天 - 使用 Ollama 模型
@@ -87,7 +88,7 @@ public class LingtuChatClient {
      * @param chatId
      * @return
      */
-    public String chat(String question, String chatId) {
+    public String chatWithOllama(String question, String chatId) {
         ChatResponse chatResponse = ollamaChatClient.prompt()
                 .user(question)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
@@ -95,6 +96,22 @@ public class LingtuChatClient {
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
         return content;
+    }
+
+    /**
+     * 聊天（SSE） - 使用 dashscope 模型
+     *
+     * @param question
+     * @param chatId
+     * @return
+     */
+    public Flux<String> chatWithDashscopeBySse(String question, String chatId) {
+        return dashscopeChatClient.prompt()
+                .user(question)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .toolCallbacks(allTools)
+                .stream()
+                .content();
     }
 
     @Resource
@@ -105,8 +122,6 @@ public class LingtuChatClient {
 
     @Resource
     private ToolCallback[] allTools;
-
-    private final ChatModel dashscopeChatModel;
 
     /**
      * 带 RAG 的对话-使用知识库回答

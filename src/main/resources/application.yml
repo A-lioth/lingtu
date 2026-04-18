@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8088
   servlet:
     context-path: /api
 spring:
@@ -7,13 +7,14 @@ spring:
     name: lingtu
   profiles:
     active: local
-  #  datasource:
-  #    url: jdbc:mysql://localhost:3306/lingtu?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
-  #    username: root
-  #    password: 39784560
-  #    driver-class-name: com.mysql.cj.jdbc.Driver
-  # PostgreSQL 数据源配置（用于 PgVector）
+  # 主数据源 - MySQL (用于用户、会话等业务数据)
   datasource:
+    url: jdbc:mysql://localhost:3306/lingtu?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 39784560
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # PostgreSQL 数据源（仅用于 PgVector 向量存储）
+  datasource-pgvector:
     url: jdbc:postgresql://localhost:5432/postgres
     username: Alioth
     password: 39784560
@@ -55,12 +56,24 @@ spring:
           auth: true
           starttls:
             enable: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+lingtu:
+  jwt:
+#    secret: ${PRODIGAL_JWT_SECRET:prodigal-travel-default-jwt-secret-min-32-chars-long!!}
+    expire-hours: 10
+    secret: prodigal-20260404-asdfghjkl
+  auth:
+    register:
+      code-ttl-minutes: 5
+      send-interval-seconds: 60
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.alioth.lingtu.model.entity
   global-config:
     db-config:
       id-type: auto
